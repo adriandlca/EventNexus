@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Publicar Evento{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 flex items-center justify-center bg-gray-50 dark:bg-background-dark">
+    <div class="max-w-2xl w-full bg-white dark:bg-[#2d2434] rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-[#3e3446]">
+        
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-text-main dark:text-white">Crear Nuevo Evento</h2>
+            <p class="text-text-sub text-sm">Ingresa los datos para tu próximo evento.</p>
+        </div>
+
+        <form id="createEventForm" class="space-y-5">
+            
+            <div>
+                <label class="block text-sm font-bold text-text-main dark:text-gray-200 mb-2">Título del Evento</label>
+                <input type="text" name="title" required placeholder="Ej: Concierto de Rock"
+                       class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:ring-2 focus:ring-primary outline-none">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                
+                <div>
+                    <label class="block text-sm font-bold text-text-main dark:text-gray-200 mb-2">Fecha</label>
+                    <input type="date" name="date" required
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:ring-2 focus:ring-primary outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-text-main dark:text-gray-200 mb-2">Hora</label>
+                    <input type="time" name="time" required
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:ring-2 focus:ring-primary outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-text-main dark:text-gray-200 mb-2">Precio ($)</label>
+                    <input type="number" name="price" step="0.01" required placeholder="0.00"
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:ring-2 focus:ring-primary outline-none">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-text-main dark:text-gray-200 mb-2">Ubicación / Lugar</label>
+                <input type="text" name="location" required placeholder="Ej: Auditorio Central"
+                       class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:ring-2 focus:ring-primary outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-text-main dark:text-gray-200 mb-2">Imagen de Portada</label>
+                <input type="file" name="image" accept="image/*" required
+                       class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 dark:text-gray-300 cursor-pointer">
+            </div>
+
+            <div id="errorMessage" class="hidden p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center"></div>
+
+            <div class="flex justify-end gap-4 pt-4 border-t border-gray-100 dark:border-[#3e3446] mt-6">
+                <a href="/" class="px-6 py-2.5 rounded-lg text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">Cancelar</a>
+                <button type="submit" id="submitBtn" class="px-8 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-md transition-all">
+                    Publicar Evento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('createEventForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const errorDiv = document.getElementById('errorMessage');
+        
+        // Estado de carga
+        btn.disabled = true;
+        btn.innerText = 'Guardando...';
+        btn.classList.add('opacity-70');
+        errorDiv.classList.add('hidden');
+
+        try {
+            const formData = new FormData(this);
+
+            // Asegúrate de que esta URL coincida con tu urls.py
+            const response = await fetch('/api/events/create/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                // Éxito: Redirigir al home
+                window.location.href = '/'; 
+            } else {
+                // Error: Mostrar detalle del backend
+                const data = await response.json();
+                // Si el backend envía un error específico, muéstralo, si no, muestra el JSON crudo
+                const errorMsg = data.detail || JSON.stringify(data);
+                errorDiv.innerText = "Error: " + errorMsg;
+                errorDiv.classList.remove('hidden');
+                
+                // Restaurar botón
+                btn.disabled = false;
+                btn.innerText = 'Publicar Evento';
+                btn.classList.remove('opacity-70');
+            }
+        } catch (error) {
+            console.error(error);
+            errorDiv.innerText = "Error de conexión con el servidor.";
+            errorDiv.classList.remove('hidden');
+            
+            // Restaurar botón
+            btn.disabled = false;
+            btn.innerText = 'Publicar Evento';
+            btn.classList.remove('opacity-70');
+        }
+    });
+
+    // Función auxiliar para obtener el CSRF Token de Django
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

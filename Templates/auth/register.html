@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Cuenta - EventApp{% endblock %}
+
+{% block content %}
+<div class="flex min-h-[80vh] items-center justify-center px-4 py-10">
+    <div id="react-register-root" class="w-full max-w-md"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<script type="text/babel">
+    const { useState } = React;
+
+    const RegisterForm = () => {
+        const [formData, setFormData] = useState({
+            username: '',
+            email: '',
+            password: ''
+        });
+        const [status, setStatus] = useState({ type: '', msg: '' });
+
+        const handleChange = (e) => {
+            setFormData({ ...formData, [e.target.name]: e.target.value });
+        };
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            setStatus({ type: 'loading', msg: 'Creando cuenta...' });
+
+            try {
+                // RETO BACKEND: Crea este endpoint en views.py usando CreateAPIView
+                const response = await fetch('/api/auth/register/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Si el backend devuelve errores de validación (ej. usuario ya existe)
+                    const errorMsg = JSON.stringify(data); 
+                    throw new Error(errorMsg);
+                }
+
+                setStatus({ type: 'success', msg: '¡Cuenta creada! Redirigiendo...' });
+                
+                // Opcional: Auto-login o mandar al login
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+
+            } catch (err) {
+                setStatus({ type: 'error', msg: 'Error al registrar: Verifique los datos.' });
+                console.error("Error API:", err);
+            }
+        };
+
+        return (
+            <div className="bg-white dark:bg-[#2d2434] rounded-2xl shadow-xl border border-gray-100 dark:border-[#3e3446] p-8">
+                <div className="text-center mb-8">
+                    <h1 className="text-2xl font-black text-text-main dark:text-white">Crea tu cuenta</h1>
+                    <p className="text-text-sub mt-2">Únete a la comunidad de EventApp</p>
+                </div>
+
+                {status.msg && (
+                    <div className={`mb-4 p-3 rounded text-sm text-center border ${
+                        status.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 
+                        status.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 
+                        'bg-blue-100 border-blue-400 text-blue-700'
+                    }`}>
+                        {status.msg}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <div>
+                        <label className="block text-sm font-bold text-text-main dark:text-gray-200 mb-1">Email</label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            onChange={handleChange}
+                            className="w-full h-12 px-4 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:border-primary outline-none" 
+                            required 
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-text-main dark:text-gray-200 mb-1">Usuario</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            onChange={handleChange}
+                            className="w-full h-12 px-4 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:border-primary outline-none" 
+                            required 
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-text-main dark:text-gray-200 mb-1">Contraseña</label>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            onChange={handleChange}
+                            className="w-full h-12 px-4 rounded-lg border border-gray-300 dark:border-[#3e3446] bg-transparent dark:text-white focus:border-primary outline-none" 
+                            required 
+                        />
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={status.type === 'loading'}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-bold h-12 rounded-lg transition-colors mt-4 disabled:opacity-50"
+                    >
+                        Registrarse
+                    </button>
+                </form>
+
+                <div className="mt-6 text-center text-sm">
+                    <span className="text-text-sub">¿Ya tienes cuenta?</span>
+                    <a href="/login" class="text-primary font-bold hover:underline ml-1">Inicia sesión</a>
+                </div>
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('react-register-root'));
+    root.render(<RegisterForm />);
+</script>
+{% endblock %}
