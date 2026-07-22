@@ -27,10 +27,10 @@
             setError(null);
 
             try {
-                // RETO BACKEND: Asegúrate de tener esta URL configurada en urls.py
                 const response = await fetch('/api/auth/token/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(formData)
                 });
 
@@ -40,14 +40,10 @@
                     throw new Error(data.detail || "Credenciales incorrectas");
                 }
 
-                // ÉXITO: Guardamos el token
-                console.log("Login exitoso, Token:", data.access);
-                localStorage.setItem('accessToken', data.access);
-                localStorage.setItem('refreshToken', data.refresh);
-                
-                // Redirigir al usuario
-                window.location.href = '/'; 
+                if (data.access) localStorage.setItem('accessToken', data.access);
+                if (data.refresh) localStorage.setItem('refreshToken', data.refresh);
 
+                window.location.href = '/';
             } catch (err) {
                 setError(err.message);
             } finally {

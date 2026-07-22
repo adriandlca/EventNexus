@@ -30,30 +30,28 @@
             setStatus({ type: 'loading', msg: 'Creando cuenta...' });
 
             try {
-                // RETO BACKEND: Crea este endpoint en views.py usando CreateAPIView
                 const response = await fetch('/api/auth/register/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(formData)
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Si el backend devuelve errores de validación (ej. usuario ya existe)
-                    const errorMsg = JSON.stringify(data); 
+                    const errorMsg = typeof data === 'object' ? (data.error || JSON.stringify(data)) : data;
                     throw new Error(errorMsg);
                 }
 
-                setStatus({ type: 'success', msg: '¡Cuenta creada! Redirigiendo...' });
-                
-                // Opcional: Auto-login o mandar al login
+                setStatus({ type: 'success', msg: '¡Cuenta creada! Entrando...' });
+
                 setTimeout(() => {
-                    window.location.href = '/login';
-                }, 1500);
+                    window.location.href = '/';
+                }, 1000);
 
             } catch (err) {
-                setStatus({ type: 'error', msg: 'Error al registrar: Verifique los datos.' });
+                setStatus({ type: 'error', msg: 'Error al registrar: ' + err.message });
                 console.error("Error API:", err);
             }
         };

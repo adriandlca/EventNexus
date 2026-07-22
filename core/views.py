@@ -5,6 +5,9 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 
 # Create your views here.
+def home_page(request):
+    return render(request,'index.html')
+
 def login_page(request):
     return render(request,'auth/login.html')
 

@@ -77,9 +77,6 @@
     const { useState, useEffect } = React;
 
     const EventCard = ({ evento }) => {
-        // CONSTRUCCIÓN DE LA URL:
-        // Asumimos que tu url en urls.py es algo como: path('evento/<int:pk>/', ...)
-        // Si tu URL es diferente (ej: /detalles/1/), cambia esta línea.
         const eventUrl = `/events/${evento.id}/detail/`; 
 
         return (
@@ -119,7 +116,6 @@
         useEffect(() => {
             const fetchEvents = async () => {
                 try {
-                    // TU OBJETIVO: Crear este endpoint en Django REST Framework
                     const response = await fetch('/api/events/'); 
                     
                     if (!response.ok) throw new Error("API no disponible");
@@ -127,7 +123,6 @@
                     setEventos(data);
                 } catch (error) {
                     console.warn("Backend no conectado. Usando datos dummy para visualización.");
-                    // Datos Dummy mientras programas el backend
                     setEventos([
                         { id: 1, title: "Django Workshop", month: "ENE", day: "26", date_text: "Dom, 10:00 AM", location: "Online", price: 0, image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800" },
                         { id: 2, title: "Lanzamiento Startup", month: "FEB", day: "10", date_text: "Lun, 6:00 PM", location: "WeWork Bogotá", price: 50, image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800" },

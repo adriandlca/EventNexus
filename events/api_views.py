@@ -19,14 +19,6 @@ class EventDetailAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
-class EventListCreateAPIView(APIView):
-    permission_classes = [AllowAny] 
-    def get(self, request):
-        events = Event.objects.all().order_by('-date')
-        serializer = EventSerializer(events, many=True)
-        return Response(serializer.data, status=200)
-    
-
 class CreateEventAPIView(APIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
